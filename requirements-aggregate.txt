@@ -1,0 +1,3 @@
+# Extend the unchanged recorded CPU requirements for aggregate regression checks.
+-r requirements-cpu.txt
+matplotlib==3.10.8
