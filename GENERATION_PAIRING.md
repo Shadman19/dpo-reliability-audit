@@ -25,10 +25,11 @@ Run the dependency-free checks with:
 python -m unittest discover -s tests -p test_generation_pairing.py -v
 ```
 
-The two integration checks require the aggregator's existing NumPy and
-Matplotlib dependencies:
+The two integration checks require the aggregator's NumPy and Matplotlib
+dependencies. The extension manifest preserves the exact recorded CPU manifest:
 
 ```bash
+pip install -r requirements-aggregate.txt
 python -m unittest discover -s tests -p test_aggregate_pairing.py -v
 ```
 
