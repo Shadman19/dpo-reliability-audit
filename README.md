@@ -1,5 +1,7 @@
 # DPO Reliability Audit and Safety-Judge Calibration Under Jailbreak Shift
 
+**CPU reproduction and evidence audit (November 2026):** see [CPU_REPRODUCTION.md](CPU_REPRODUCTION.md) for pinned public-data reproduction, per-item score provenance, subgroup confidence intervals, and normalized-text-overlap sensitivity results. The historical study tables below are unchanged.
+
 Two small, fully measured studies run on one NVIDIA V100 (16 GB) on the ODU Wahab cluster.
 Every number below comes from `results/summary.json` and `results/safety_key_results.md`.
 
