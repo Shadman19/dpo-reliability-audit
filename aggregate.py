@@ -1,10 +1,10 @@
 import json, glob, os, numpy as np
-from generation_pairing import load_generations, winrate_vs_base
+from generation_pairing import load_generations, select_baseline, winrate_vs_base
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
 runs = {}
 for f in sorted(glob.glob("runs/*/result.json")):
     r = json.load(open(f)); runs[os.path.basename(os.path.dirname(f))] = r
-base = next((k for k in runs if k.startswith("beta0_")), None)
+base = select_baseline(runs)
 generations = {k: load_generations(f"runs/{k}/generations.jsonl") for k in runs}
 basegen = generations[base] if base else None
 # Fail before writing summaries if any comparison has incomplete/ambiguous prompts.
