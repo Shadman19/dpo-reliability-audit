@@ -2,6 +2,8 @@
 
 **CPU reproduction and evidence audit (November 2026):** see [CPU_REPRODUCTION.md](CPU_REPRODUCTION.md) for pinned public-data reproduction, per-item score provenance, subgroup confidence intervals, and normalized-text-overlap sensitivity results. The historical study tables below are unchanged.
 
+**SQL evidence audit:** [SQL_EVALUATION_AUDIT.md](SQL_EVALUATION_AUDIT.md) describes a SQLite schema and SQL queries that independently reconstruct 174 archived metric fields using joins, CTEs and window functions. It preserves the original frozen thresholds and reports overlap-exclusion membership counts.
+
 Two small, fully measured studies run on one NVIDIA V100 (16 GB) on the ODU Wahab cluster.
 Every number below comes from `results/summary.json` and `results/safety_key_results.md`.
 
