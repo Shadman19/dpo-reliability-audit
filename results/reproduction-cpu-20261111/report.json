@@ -1,0 +1,507 @@
+{
+  "schema_version": 1,
+  "experiment_kind": "public_benchmark_reproduction",
+  "dataset": {
+    "id": "lmsys/toxic-chat",
+    "config": "toxicchat0124",
+    "revision": "29df8e4dba60e1f4af4b4075c0705c5b313548a8",
+    "files": {
+      "train": {
+        "url": "https://huggingface.co/datasets/lmsys/toxic-chat/resolve/29df8e4dba60e1f4af4b4075c0705c5b313548a8/data/0124/toxic-chat_annotation_train.csv",
+        "sha256": "702eb9b7cac96c3c35e28b9b95855a71f26f21afba8666f9d243f1fa469e81ed",
+        "rows": 5082
+      },
+      "test": {
+        "url": "https://huggingface.co/datasets/lmsys/toxic-chat/resolve/29df8e4dba60e1f4af4b4075c0705c5b313548a8/data/0124/toxic-chat_annotation_test.csv",
+        "sha256": "3c2e49889626f7738dca0a29bface0ba0a0595b2ffdd17f0e02f19df7c3c4c9b",
+        "rows": 5083
+      }
+    }
+  },
+  "split": {
+    "seed": 0,
+    "counts": {
+      "fit": 3082,
+      "calibration": 2000,
+      "test": 5083,
+      "test_without_train_text_overlap": 4833
+    },
+    "id_set_sha256": {
+      "fit": "3a5560e3f912c917b76eeda7e6d2e3ccaa4045a95948ad00154d63ddd094629a",
+      "calibration": "8faedc358726caa64027d64de7920a9f0c7b1afc912d7773afd054107f0c2d3b",
+      "test": "f825a0a8971afa77d68dc5378d577fb95c59e7037a20cc22e1c629daabacee7b",
+      "test_without_train_text_overlap": "6c824b0cf4d5c641db79edb6a7e4e7ede5ea9e0a2cba4eca1a4b3efd349ac474"
+    },
+    "membership_file_sha256": "fd4bb58c82cbb831d8f4c9671e6b2be5ba0e12facb25a780ef06d1c417a501c3",
+    "text_overlap_diagnostic": {
+      "normalization": "Unicode casefold after collapsing whitespace; exact hash matches only",
+      "fit_calibration_distinct_matches": 52,
+      "fit_test_distinct_matches": 152,
+      "calibration_test_distinct_matches": 83,
+      "train_test_distinct_matches": 230,
+      "test_rows_matching_train": 250,
+      "test_rows_without_train_match": 4833,
+      "interpretation": "Potential contamination signal, not semantic duplicate adjudication. Sensitivity slices exclude only exact normalized train-text matches; other dependencies may remain."
+    }
+  },
+  "configuration": {
+    "target_fpr": 0.05,
+    "n_cal": 2000,
+    "bootstraps": 500,
+    "ece_bins": 15,
+    "tfidf": {
+      "ngram_range": [
+        1,
+        2
+      ],
+      "min_df": 2,
+      "max_features": 200000,
+      "sublinear_tf": true
+    },
+    "logistic_regression": {
+      "C": 4.0,
+      "max_iter": 2000,
+      "class_weight": "balanced"
+    },
+    "calibration": {
+      "platt_C": 1000000.0,
+      "isotonic_out_of_bounds": "clip"
+    }
+  },
+  "baseline_fit": {
+    "feature_shape": [
+      3082,
+      13155
+    ],
+    "solver_iterations": [
+      15
+    ]
+  },
+  "source_sha256": {
+    "safety_calib.py": "1f00a98637e8e928f9855e8799f081ae4bc65d8ed30a33f765c7d98373ebc58d",
+    "safety_metrics.py": "e6a9b89d6f852dcf0a7e8c304d535b70ba182f0c6c2e48e2a60c5bcd6c0cda7a",
+    "requirements-cpu.txt": "1153555b67e9d8ace3024a7fb4b8a47ddae6a289f3218e3212b4cb3652543686"
+  },
+  "environment": {
+    "python": "3.12.14",
+    "numpy": "2.3.5",
+    "scikit_learn": "1.8.0",
+    "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+    "machine": "x86_64",
+    "execution": "CPU baseline; no LLM/GPU inference"
+  },
+  "threshold_rule": "threshold is just above the (floor(target_fpr*n_negative)+1)th highest calibration-negative score; ties may reduce empirical FPR; no population guarantee",
+  "uncertainty": "Wilson 95% intervals for FPR/FNR; percentile iid item bootstrap for ECE, including single-class subgroups; conditional on fitted model/calibrators/threshold; not training/calibration uncertainty",
+  "limitations": [
+    "Reproduction of an already-inspected public test set; not a new untouched generalization test.",
+    "One fixed data split and seed; no human evaluation or new LLM result.",
+    "Jailbreak annotations contain only positives in this release; subgroup AUROC/FPR are undefined.",
+    "Item bootstrap and Wilson intervals assume independent items; conversation/dependency effects are not modeled.",
+    "SHA-256 IDs are pseudonymous references to a public dataset, not a privacy guarantee.",
+    "Threshold handling differs from the historical quantile rule; historical result files are unchanged.",
+    "Optional CUDA scoring deduplicates Yes/No first-token IDs; no CUDA result is reproduced here.",
+    "Library versions differ from the historical experiment; small score differences can occur."
+  ],
+  "judges": {
+    "tfidf_lr": {
+      "variants": {
+        "raw": {
+          "threshold": 0.40740705367369784,
+          "calibration_negative_count": 1840,
+          "calibration_false_positives": 92,
+          "calibration_empirical_fpr": 0.05,
+          "all": {
+            "n": 5083,
+            "positives": 362,
+            "negatives": 4721,
+            "pos_rate": 0.07121778477277199,
+            "ece": 0.08051920638090047,
+            "ece_ci95": [
+              0.07487229939638954,
+              0.08594626386961203
+            ],
+            "brier": 0.04875038633952402,
+            "false_positives": 245,
+            "false_negatives": 96,
+            "fpr_at_cal_thr": 0.051895784791357764,
+            "fnr_at_cal_thr": 0.26519337016574585,
+            "fpr_ci95": [
+              0.04592479914338581,
+              0.05859541875699543
+            ],
+            "fnr_ci95": [
+              0.22235730644296692,
+              0.31296053165006266
+            ],
+            "auroc": 0.9089149690872216,
+            "auprc": 0.67131046754131
+          },
+          "ordinary": {
+            "n": 4992,
+            "positives": 271,
+            "negatives": 4721,
+            "pos_rate": 0.054286858974358976,
+            "ece": 0.08603215157648332,
+            "ece_ci95": [
+              0.08074899293298791,
+              0.092037769346616
+            ],
+            "brier": 0.04779922155259519,
+            "false_positives": 245,
+            "false_negatives": 88,
+            "fpr_at_cal_thr": 0.051895784791357764,
+            "fnr_at_cal_thr": 0.3247232472324723,
+            "fpr_ci95": [
+              0.04592479914338581,
+              0.05859541875699543
+            ],
+            "fnr_ci95": [
+              0.27175783083483496,
+              0.3825883496590702
+            ],
+            "auroc": 0.8850652380703007,
+            "auprc": 0.5642790484188179
+          },
+          "jailbreak": {
+            "n": 91,
+            "positives": 91,
+            "negatives": 0,
+            "pos_rate": 1.0,
+            "ece": 0.22190521577678865,
+            "ece_ci95": [
+              0.17725617811307656,
+              0.2715212254463123
+            ],
+            "brier": 0.10092856893676294,
+            "false_positives": 0,
+            "false_negatives": 8,
+            "fpr_at_cal_thr": null,
+            "fnr_at_cal_thr": 0.08791208791208792,
+            "fpr_ci95": null,
+            "fnr_ci95": [
+              0.04522020780830409,
+              0.1639863888363774
+            ],
+            "auroc": null,
+            "auprc": null
+          },
+          "test_without_train_text_overlap": {
+            "n": 4833,
+            "positives": 329,
+            "negatives": 4504,
+            "pos_rate": 0.06807366025243121,
+            "ece": 0.0807065709511472,
+            "ece_ci95": [
+              0.07519300181408865,
+              0.08661499196343588
+            ],
+            "brier": 0.049531901941074215,
+            "false_positives": 231,
+            "false_negatives": 96,
+            "fpr_at_cal_thr": 0.051287744227353466,
+            "fnr_at_cal_thr": 0.2917933130699088,
+            "fpr_ci95": [
+              0.04521949347343256,
+              0.05812075552959338
+            ],
+            "fnr_ci95": [
+              0.24530044307830826,
+              0.343092179387021
+            ],
+            "auroc": 0.8996585945893417,
+            "auprc": 0.632995565945752
+          },
+          "jailbreak_without_train_text_overlap": {
+            "n": 75,
+            "positives": 75,
+            "negatives": 0,
+            "pos_rate": 1.0,
+            "ece": 0.2512432981064071,
+            "ece_ci95": [
+              0.20008364043627255,
+              0.3062573355194245
+            ],
+            "brier": 0.11976228473496238,
+            "false_positives": 0,
+            "false_negatives": 8,
+            "fpr_at_cal_thr": null,
+            "fnr_at_cal_thr": 0.10666666666666667,
+            "fpr_ci95": null,
+            "fnr_ci95": [
+              0.055049127621743216,
+              0.1966136284647307
+            ],
+            "auroc": null,
+            "auprc": null
+          }
+        },
+        "platt": {
+          "threshold": 0.17652765054588185,
+          "calibration_negative_count": 1840,
+          "calibration_false_positives": 92,
+          "calibration_empirical_fpr": 0.05,
+          "all": {
+            "n": 5083,
+            "positives": 362,
+            "negatives": 4721,
+            "pos_rate": 0.07121778477277199,
+            "ece": 0.009935944367364941,
+            "ece_ci95": [
+              0.008817912362827432,
+              0.01683823662169932
+            ],
+            "brier": 0.03723653900244928,
+            "false_positives": 245,
+            "false_negatives": 96,
+            "fpr_at_cal_thr": 0.051895784791357764,
+            "fnr_at_cal_thr": 0.26519337016574585,
+            "fpr_ci95": [
+              0.04592479914338581,
+              0.05859541875699543
+            ],
+            "fnr_ci95": [
+              0.22235730644296692,
+              0.31296053165006266
+            ],
+            "auroc": 0.9089149690872216,
+            "auprc": 0.67131046754131
+          },
+          "ordinary": {
+            "n": 4992,
+            "positives": 271,
+            "negatives": 4721,
+            "pos_rate": 0.054286858974358976,
+            "ece": 0.011385904921863171,
+            "ece_ci95": [
+              0.009861323140861258,
+              0.0177785200860046
+            ],
+            "brier": 0.03440409127891806,
+            "false_positives": 245,
+            "false_negatives": 88,
+            "fpr_at_cal_thr": 0.051895784791357764,
+            "fnr_at_cal_thr": 0.3247232472324723,
+            "fpr_ci95": [
+              0.04592479914338581,
+              0.05859541875699543
+            ],
+            "fnr_ci95": [
+              0.27175783083483496,
+              0.3825883496590702
+            ],
+            "auroc": 0.8850652380703007,
+            "auprc": 0.5642790484188179
+          },
+          "jailbreak": {
+            "n": 91,
+            "positives": 91,
+            "negatives": 0,
+            "pos_rate": 1.0,
+            "ece": 0.32544079679081644,
+            "ece_ci95": [
+              0.26834727858593554,
+              0.38887608178625194
+            ],
+            "brier": 0.1926165284075906,
+            "false_positives": 0,
+            "false_negatives": 8,
+            "fpr_at_cal_thr": null,
+            "fnr_at_cal_thr": 0.08791208791208792,
+            "fpr_ci95": null,
+            "fnr_ci95": [
+              0.04522020780830409,
+              0.1639863888363774
+            ],
+            "auroc": null,
+            "auprc": null
+          },
+          "test_without_train_text_overlap": {
+            "n": 4833,
+            "positives": 329,
+            "negatives": 4504,
+            "pos_rate": 0.06807366025243121,
+            "ece": 0.010784364153251243,
+            "ece_ci95": [
+              0.009216021703256841,
+              0.017371696875960244
+            ],
+            "brier": 0.03810702758651169,
+            "false_positives": 231,
+            "false_negatives": 96,
+            "fpr_at_cal_thr": 0.051287744227353466,
+            "fnr_at_cal_thr": 0.2917933130699088,
+            "fpr_ci95": [
+              0.04521949347343256,
+              0.05812075552959338
+            ],
+            "fnr_ci95": [
+              0.24530044307830826,
+              0.343092179387021
+            ],
+            "auroc": 0.8996585945893417,
+            "auprc": 0.632995565945752
+          },
+          "jailbreak_without_train_text_overlap": {
+            "n": 75,
+            "positives": 75,
+            "negatives": 0,
+            "pos_rate": 1.0,
+            "ece": 0.36636220335862596,
+            "ece_ci95": [
+              0.29944353330961726,
+              0.43483325361025826
+            ],
+            "brier": 0.22625427876891388,
+            "false_positives": 0,
+            "false_negatives": 8,
+            "fpr_at_cal_thr": null,
+            "fnr_at_cal_thr": 0.10666666666666667,
+            "fpr_ci95": null,
+            "fnr_ci95": [
+              0.055049127621743216,
+              0.1966136284647307
+            ],
+            "auroc": null,
+            "auprc": null
+          }
+        },
+        "isotonic": {
+          "threshold": 0.2142857142857143,
+          "calibration_negative_count": 1840,
+          "calibration_false_positives": 76,
+          "calibration_empirical_fpr": 0.041304347826086954,
+          "all": {
+            "n": 5083,
+            "positives": 362,
+            "negatives": 4721,
+            "pos_rate": 0.07121778477277199,
+            "ece": 0.007118062811271905,
+            "ece_ci95": [
+              0.005097299358031427,
+              0.013199476083154043
+            ],
+            "brier": 0.03697889373243748,
+            "false_positives": 216,
+            "false_negatives": 110,
+            "fpr_at_cal_thr": 0.04575301842829909,
+            "fnr_at_cal_thr": 0.30386740331491713,
+            "fpr_ci95": [
+              0.04015298017792983,
+              0.052091693557531085
+            ],
+            "fnr_ci95": [
+              0.25875272876355226,
+              0.3531009948200372
+            ],
+            "auroc": 0.9073617233917806,
+            "auprc": 0.6519767254184288
+          },
+          "ordinary": {
+            "n": 4992,
+            "positives": 271,
+            "negatives": 4721,
+            "pos_rate": 0.054286858974358976,
+            "ece": 0.010352211987820029,
+            "ece_ci95": [
+              0.008170398754385565,
+              0.0166332512698222
+            ],
+            "brier": 0.034464492282348456,
+            "false_positives": 216,
+            "false_negatives": 96,
+            "fpr_at_cal_thr": 0.04575301842829909,
+            "fnr_at_cal_thr": 0.35424354243542433,
+            "fpr_ci95": [
+              0.04015298017792983,
+              0.052091693557531085
+            ],
+            "fnr_ci95": [
+              0.2996993386929015,
+              0.41286222192834593
+            ],
+            "auroc": 0.8839037479550818,
+            "auprc": 0.5412580030329325
+          },
+          "jailbreak": {
+            "n": 91,
+            "positives": 91,
+            "negatives": 0,
+            "pos_rate": 1.0,
+            "ece": 0.29348709964630715,
+            "ece_ci95": [
+              0.23424706728950911,
+              0.353909424186261
+            ],
+            "brier": 0.17491177328017785,
+            "false_positives": 0,
+            "false_negatives": 14,
+            "fpr_at_cal_thr": null,
+            "fnr_at_cal_thr": 0.15384615384615385,
+            "fpr_ci95": null,
+            "fnr_ci95": [
+              0.09391213405915476,
+              0.2418214071223777
+            ],
+            "auroc": null,
+            "auprc": null
+          },
+          "test_without_train_text_overlap": {
+            "n": 4833,
+            "positives": 329,
+            "negatives": 4504,
+            "pos_rate": 0.06807366025243121,
+            "ece": 0.00830024908907496,
+            "ece_ci95": [
+              0.0058931229961342296,
+              0.01447105101638326
+            ],
+            "brier": 0.037851713616641414,
+            "false_positives": 202,
+            "false_negatives": 110,
+            "fpr_at_cal_thr": 0.044849023090586145,
+            "fnr_at_cal_thr": 0.3343465045592705,
+            "fpr_ci95": [
+              0.03918251512123995,
+              0.05129126541127027
+            ],
+            "fnr_ci95": [
+              0.28554054795532036,
+              0.3869762100645402
+            ],
+            "auroc": 0.8979603405551027,
+            "auprc": 0.6130610143502224
+          },
+          "jailbreak_without_train_text_overlap": {
+            "n": 75,
+            "positives": 75,
+            "negatives": 0,
+            "pos_rate": 1.0,
+            "ece": 0.3323553234884819,
+            "ece_ci95": [
+              0.2668986286239152,
+              0.4025902917559675
+            ],
+            "brier": 0.20653019261436664,
+            "false_positives": 0,
+            "false_negatives": 14,
+            "fpr_at_cal_thr": null,
+            "fnr_at_cal_thr": 0.18666666666666668,
+            "fpr_ci95": null,
+            "fnr_ci95": [
+              0.11458109606529086,
+              0.2892858452239342
+            ],
+            "auroc": null,
+            "auprc": null
+          }
+        }
+      },
+      "predictions": {
+        "file": "tfidf_lr_predictions.jsonl",
+        "sha256": "3c99b77f91becf2d2d18c35abd35457d08c6e90c0259f6d774c2716d99e3b137",
+        "rows": 7083
+      }
+    }
+  },
+  "elapsed_seconds": 1.84125822399983
+}
