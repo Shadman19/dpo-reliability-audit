@@ -4,6 +4,25 @@ import math
 from pathlib import Path
 
 
+def select_baseline(runs):
+    """Require one explicit beta-zero configuration, independent of filenames.
+
+    Multiple seeds/baselines need an explicit comparison design; selecting the
+    first sorted filename would silently decide that scientific question.
+    """
+    baselines = []
+    for name, result in runs.items():
+        beta = result.get('config', {}).get('beta')
+        if type(beta) not in (int, float) or not math.isfinite(beta) or beta < 0:
+            raise ValueError(f'{name}: beta must be a finite nonnegative number')
+        if beta == 0:
+            baselines.append(name)
+    if len(baselines) != 1:
+        raise ValueError('require exactly one beta-zero baseline; '
+                         f'found {len(baselines)}; specify a comparison design')
+    return baselines[0]
+
+
 def _unique_object(pairs):
     obj = {}
     for key, value in pairs:
