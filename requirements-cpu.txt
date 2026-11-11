@@ -4,5 +4,3 @@ scipy==1.17.0
 scikit-learn==1.8.0
 joblib==1.5.3
 threadpoolctl==3.6.0
-# Historical aggregator plotting and its end-to-end regression checks.
-matplotlib==3.10.8
