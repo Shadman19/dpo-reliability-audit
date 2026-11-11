@@ -3,10 +3,26 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from generation_pairing import load_generations, winrate_vs_base
+from generation_pairing import load_generations, select_baseline, winrate_vs_base
 
 
 class GenerationPairingTests(unittest.TestCase):
+    def test_baseline_selected_from_configuration_not_filename(self):
+        runs = {'beta0_misleading': {'config': {'beta': 0.1}},
+                'arbitrary-control-name': {'config': {'beta': 0}}}
+        self.assertEqual(select_baseline(runs), 'arbitrary-control-name')
+
+    def test_missing_multiple_or_invalid_baseline_design_fails(self):
+        for runs in [{}, {'tuned':{'config':{'beta':0.1}}},
+                     {'a':{'config':{'beta':0}},'b':{'config':{'beta':0}}},
+                     {'a':{'config':{'beta':False}}},
+                     {'a':{'config':{'beta':'0'}}},
+                     {'a':{'config':{'beta':float('nan')}}},
+                     {'a':{'config':{'beta':-0.1}}}]:
+            with self.subTest(runs=runs):
+                with self.assertRaises(ValueError):
+                    select_baseline(runs)
+
     def load(self, text):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / 'generations.jsonl'
