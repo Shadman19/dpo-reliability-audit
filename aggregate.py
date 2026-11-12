@@ -1,14 +1,19 @@
 import json, glob, os, numpy as np
+from generation_pairing import load_generations, select_baseline, winrate_vs_base
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
 runs = {}
 for f in sorted(glob.glob("runs/*/result.json")):
     r = json.load(open(f)); runs[os.path.basename(os.path.dirname(f))] = r
-base = next((k for k in runs if k.startswith("beta0_")), None)
-basegen = [json.loads(l) for l in open(f"runs/{base}/generations.jsonl")] if base else None
+base = select_baseline(runs)
+generations = {k: load_generations(f"runs/{k}/generations.jsonl") for k in runs}
+basegen = generations[base] if base else None
+# Fail before writing summaries if any comparison has incomplete/ambiguous prompts.
+winrates = {k: winrate_vs_base(generations[k], basegen)
+            for k, r in runs.items() if basegen and r["config"]["beta"] > 0}
 # pooled linear fit of reward-model score on response length (all runs), for a length-adjusted score
 allg = []
 for k in runs:
-    allg += [json.loads(l) for l in open(f"runs/{k}/generations.jsonl")]
+    allg += generations[k]
 L = np.array([g["len"] for g in allg], float); R = np.array([g["rm"] for g in allg])
 slope, icpt = np.polyfit(L, R, 1)
 corr = float(np.corrcoef(L, R)[0, 1])
@@ -17,9 +22,8 @@ for k, r in runs.items():
     b = r["config"]["beta"]; g = r["gen"]; p = r["pref"]
     win = None
     if basegen and b > 0:
-        mine = [json.loads(l) for l in open(f"runs/{k}/generations.jsonl")]
-        win = float(np.mean([m["rm"] > q["rm"] for m, q in zip(mine, basegen)]))
-    mine_all = [json.loads(l) for l in open(f"runs/{k}/generations.jsonl")]
+        win = winrates[k]
+    mine_all = generations[k]
     adj = float(np.mean([m["rm"] - slope * m["len"] for m in mine_all]) - icpt)
     rows.append({"rm_len_adjusted": adj, "run": k, "beta": b, "seed": r["config"]["seed"],
                  "heldout_implicit_acc": p.get("implicit_reward_acc"), "acc_ci95": p.get("implicit_reward_acc_ci95"),
