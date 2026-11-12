@@ -1,5 +1,8 @@
 # Strict prompt pairing for the historical DPO aggregator
 
+Numeric length and regression boundary behavior is documented in
+[`AGGREGATE_NUMERIC_POLICY.md`](AGGREGATE_NUMERIC_POLICY.md).
+
 The historical `aggregate.py` compared generation rows with positional `zip`.
 Reordered files can compare different prompts, and unequal files silently use
 the shorter denominator. The proposed aggregator validates every generation
