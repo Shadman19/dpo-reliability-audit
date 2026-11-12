@@ -37,7 +37,7 @@ def _reject_constant(value):
 
 
 def load_generations(path):
-    """Load nonempty JSONL with unique exact prompts and finite numeric RM.
+    """Load unique prompts, finite RM scores and nonnegative integer lengths.
 
     The historical writer persists prompt text, not stable sample IDs. Exact
     text is therefore the only available pairing key. Repeated prompts are
@@ -60,6 +60,10 @@ def load_generations(path):
                 score = item.get('rm')
                 if type(score) not in (int, float) or not math.isfinite(score):
                     raise ValueError('rm must be a finite number, not bool/string')
+                length = item.get('len')
+                if (type(length) is not int or length < 0
+                        or not math.isfinite(length)):
+                    raise ValueError('len must be a finite nonnegative integer')
                 seen.add(prompt)
                 records.append(item)
             except (ValueError, OverflowError) as exc:
