@@ -37,6 +37,8 @@ scored by an independent reward model (OpenAssistant DeBERTa-v3-large) with iden
 
 ## Study 2. Do safety-judge calibration and thresholds survive jailbreak prompts?
 
+**Prior work and scope.** [Liu, Huang, Gu, Wang, and Wang (ICLR 2025), *On Calibration of LLM-based Guard Models for Reliable Content Moderation*](https://proceedings.iclr.cc/paper_files/paper/2025/hash/a99f732df9b668284b449da0214a3286-Abstract-Conference.html) previously established guard-model miscalibration under jailbreak attacks and studied post-hoc calibration. This small study is a conceptual replication with different models and an additional overall-versus-subgroup and frozen-operating-point analysis. The novelty of those additional analyses remains unestablished.
+
 **Setup.** ToxicChat (toxicchat0124): 5,082 training and 5,083 test user prompts; the test set has 362 toxic and 91 jailbreak prompts (all 91 labeled toxic).
 Judges: TF-IDF logistic regression, and prompted Qwen2.5-0.5B and 1.5B Instruct scored by P(Yes) against P(No).
 Platt and isotonic calibrators and a 5% false-positive threshold were fit on 2,000 held-out training prompts only, then frozen.
@@ -49,9 +51,13 @@ Platt and isotonic calibrators and a 5% false-positive threshold were fit on 2,0
 
 **Findings.**
 1. Aggregate calibration hides the failure: after Platt scaling, overall ECE is about 0.01, yet 0.33 and 0.71 on jailbreak prompts, which are under 2% of the test set.
-2. Calibration fit on ordinary traffic made jailbreak calibration worse for every judge.
+2. In the historical table, Platt calibration increased toxicity-probability calibration error on the jailbreak subgroup for every judge.
 3. The 5%-FPR threshold transferred on false positives but the prompted 1.5B judge still missed 47% of jailbreaks.
 4. A lexical baseline outranked the prompted 1.5B judge; the 0.5B judge was below chance before calibration.
+
+**Calibration-data provenance.** The current `safety_calib.py` reproduction samples calibration prompts from the original training mixture without explicitly excluding jailbreak-labelled prompts. The archived CPU reproduction does not independently establish the historical Qwen calibration membership.
+
+**Metric interpretation.** ECE here measures fixed-bin calibration of the toxicity probability. All 91 jailbreak test prompts are labelled toxic, so their subgroup ECE equals `1 - mean(P(toxic))`; subgroup AUROC and FPR are undefined. Liu et al. use predicted-class confidence ECE and a different ToxicChat filtering rule, so their reported ECE values and these values have different evaluation definitions.
 
 ## Reproduce
 
