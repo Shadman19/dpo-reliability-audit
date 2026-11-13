@@ -9,7 +9,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from sql_eval_audit import ROOT, ingest, initialize, metric_rows, sha256, verify_against_report
+from sql_eval_audit import ROOT, ingest, initialize, metric_rows, sha256, verify_against_report, strict_json_loads
 
 RUN = ROOT / "results/reproduction-cpu-20261111"
 
@@ -88,6 +88,46 @@ class SQLMetricTests(unittest.TestCase):
 
 
 class SQLIngestionTests(unittest.TestCase):
+    def test_nested_escaped_duplicate_fields_and_non_json_numbers_rejected(self):
+        for payload in ('{"p":{"raw":0.1,"raw":0.2}}', '{"id":"a","\\u0069d":"b"}'):
+            with self.subTest(payload=payload), self.assertRaisesRegex(ValueError, 'duplicate JSON field'):
+                strict_json_loads(payload)
+        for value in ('NaN', 'Infinity', '-Infinity'):
+            with self.subTest(value=value), self.assertRaisesRegex(ValueError, 'non-JSON numeric constant'):
+                strict_json_loads('{"metadata":' + value + '}')
+        self.assertEqual(strict_json_loads('{"a":{"raw":0.1},"b":{"raw":0.2}}'),
+                         {'a': {'raw': 0.1}, 'b': {'raw': 0.2}})
+
+    def test_duplicate_json_fields_rejected_in_all_evidence_layers(self):
+        # The final repeated value agrees with the original archive, hiding the
+        # earlier conflicting value from Python's default JSON decoder.
+        for layer in ('report', 'membership', 'prediction'):
+            with self.subTest(layer=layer), tempfile.TemporaryDirectory() as tmp, sqlite3.connect(':memory:') as connection:
+                target = self.copied_run(tmp)
+                report_path = target / 'report.json'
+                report = json.loads(report_path.read_text())
+                if layer == 'report':
+                    report_path.write_text('{"schema_version":999,' + report_path.read_text()[1:])
+                elif layer == 'membership':
+                    path = target / 'split_membership.json'
+                    payload = ('{"fit":[],' + path.read_text()[1:]).encode()
+                    path.write_bytes(payload)
+                    report['split']['membership_file_sha256'] = sha256(payload)
+                    report_path.write_text(json.dumps(report))
+                else:
+                    path = target / 'tfidf_lr_predictions.jsonl'
+                    lines = path.read_bytes().splitlines()
+                    original = json.loads(lines[0])
+                    lines[0] = ('{"y":' + str(1-original['y']) + ',').encode() + lines[0][1:]
+                    payload = b'\n'.join(lines) + b'\n'
+                    path.write_bytes(payload)
+                    report['judges']['tfidf_lr']['predictions']['sha256'] = sha256(payload)
+                    report_path.write_text(json.dumps(report))
+                initialize(connection)
+                with self.assertRaisesRegex(ValueError, 'duplicate JSON field'):
+                    ingest(connection, target)
+                self.assertEqual(connection.execute('SELECT COUNT(*) FROM runs').fetchone()[0], 0)
+
     def copied_run(self, tmp):
         target = Path(tmp) / "run"
         shutil.copytree(RUN, target)
@@ -130,3 +170,4 @@ class SQLIngestionTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

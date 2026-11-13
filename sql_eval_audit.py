@@ -25,8 +25,25 @@ def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def strict_json_loads(payload: str | bytes):
+    """Reject ambiguous objects and non-JSON numeric constants at every depth."""
+    def unique_fields(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError(f"duplicate JSON field: {key}")
+            result[key] = value
+        return result
+
+    def invalid_constant(value):
+        raise ValueError(f"non-JSON numeric constant: {value}")
+
+    return json.loads(payload, object_pairs_hook=unique_fields,
+                      parse_constant=invalid_constant)
+
+
 def load_json(path: Path):
-    return json.loads(path.read_text(encoding="utf-8"))
+    return strict_json_loads(path.read_text(encoding="utf-8"))
 
 
 def checked_artifact(run_dir: Path, name: str, expected_hash: str) -> bytes:
@@ -49,7 +66,7 @@ def initialize(connection: sqlite3.Connection) -> None:
 def ingest(connection: sqlite3.Connection, run_dir: Path) -> tuple[str, dict]:
     """Validate archived structure and ingest a single run in one transaction."""
     report_bytes = (run_dir / "report.json").read_bytes()
-    report = json.loads(report_bytes)
+    report = strict_json_loads(report_bytes)
     if report.get("schema_version") != 1:
         raise ValueError("only evidence schema_version 1 is supported")
     bins = report["configuration"]["ece_bins"]
@@ -60,7 +77,7 @@ def ingest(connection: sqlite3.Connection, run_dir: Path) -> tuple[str, dict]:
         raise ValueError("target_fpr must be finite and between zero and one")
     membership_bytes = checked_artifact(
         run_dir, "split_membership.json", report["split"]["membership_file_sha256"])
-    membership = json.loads(membership_bytes)
+    membership = strict_json_loads(membership_bytes)
     if set(membership) != PARTITIONS:
         raise ValueError("unexpected membership partitions")
     for partition, ids in membership.items():
@@ -111,7 +128,7 @@ def ingest(connection: sqlite3.Connection, run_dir: Path) -> tuple[str, dict]:
             payload = checked_artifact(run_dir, spec["file"], spec["sha256"])
             connection.execute("INSERT OR IGNORE INTO artifacts VALUES (?, ?, ?)",
                 (run_id, spec["file"], sha256(payload)))
-            rows = [json.loads(line) for line in payload.decode("utf-8").splitlines()]
+            rows = [strict_json_loads(line) for line in payload.decode("utf-8").splitlines()]
             if len(rows) != spec["rows"]:
                 raise ValueError("prediction row count mismatch")
             split_ids = {"calibration": [], "test": []}
@@ -209,3 +226,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

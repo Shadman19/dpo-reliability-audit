@@ -108,3 +108,12 @@ all evidence. This SQL path does not reconstruct confidence intervals, AUPRC,
 model fitting, calibration fitting, raw-data normalization or GPU results. The
 existing Python verifier remains the full archived-metric check. SQLite query
 results are compared with numeric tolerances for floating-point summation order.
+
+## Strict JSON input contract
+
+Report, membership and per-example JSON now reject duplicate object fields,
+including nested and Unicode-escaped repeated names, rather than silently keeping
+the last value. NaN and Infinity tokens are rejected as non-JSON numeric constants.
+Checks precede a committed ingestion; a failure leaves no imported run rows.
+These checks remove parsing ambiguity, not the need for trusted provenance:
+a manifest and all its artifacts can still be rewritten together.
