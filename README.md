@@ -4,6 +4,8 @@
 
 **SQL evidence audit:** [SQL_EVALUATION_AUDIT.md](SQL_EVALUATION_AUDIT.md) describes a SQLite schema and SQL queries that independently reconstruct 174 archived metric fields using joins, CTEs and window functions. It preserves the original frozen thresholds and reports overlap-exclusion membership counts.
 
+**CPU split sensitivity:** [SPLIT_SENSITIVITY.md](SPLIT_SENSITIVITY.md) reports all three additional fit/calibration splits alongside the existing seed-0 comparator, with recorded summaries and reproduction/verification commands. Low overall ECE coexists with larger jailbreak ECE in all four fits; the same inspected test set is reused, so these are not independent test replications or new DPO/GPU results.
+
 Two small, fully measured studies run on one NVIDIA V100 (16 GB) on the ODU Wahab cluster.
 Every number below comes from `results/summary.json` and `results/safety_key_results.md`.
 
