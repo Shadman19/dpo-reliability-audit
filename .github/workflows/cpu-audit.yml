@@ -14,3 +14,12 @@ jobs:
           cache-dependency-path: requirements-aggregate.txt
       - run: pip install -r requirements-aggregate.txt
       - run: python -m unittest discover -s tests -v
+      - name: Reproduce and verify split sensitivity
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+          OMP_NUM_THREADS: '1'
+        run: |
+          for seed in 1 2 3; do
+            python safety_calib.py --baseline-only --seed "$seed" --out-dir "runs/sensitivity/seed-$seed"
+          done
+          python verify_split_sensitivity.py
