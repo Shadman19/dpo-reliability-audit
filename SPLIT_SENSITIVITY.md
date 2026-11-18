@@ -22,6 +22,16 @@ all four fits pass and does not overwrite evidence. Hashes establish integrity,
 not authenticity of a coordinated rewrite. Existing verifier and JSON parsing
 limitations remain. No private account or career records are needed to refit.
 
+The command also reconciles the recomputed scalar results with the versioned
+`summary.json` by seed. Float fields use absolute tolerance `1e-10` (zero relative
+tolerance); integer counts and boolean flags are exact. Missing, extra or repeated
+seeds, changed scalar fields, nonfinite numbers and duplicate JSON fields fail
+before success JSON is printed. `--expected-summary PATH` can explicitly select
+another recorded summary for a documented experiment. Human-readable dates,
+free-text conclusions and README tables are not mechanically reconciled; review
+them separately. A coordinated rewrite of both evidence and summary is still
+outside this check's authenticity guarantee.
+
 ## Observed Platt-calibrated results
 
 | Seed | Overall ECE | Jailbreak ECE | Missed / 91 jailbreaks | Test FPR |
