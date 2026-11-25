@@ -14,3 +14,8 @@ jobs:
           cache-dependency-path: requirements-aggregate.txt
       - run: pip install -r requirements-aggregate.txt
       - run: python -m unittest discover -s tests -v
+      - name: Reproduce archived threshold-selection sensitivity
+        run: >-
+          python threshold_selection_sensitivity.py --repo .
+          --out /tmp/threshold-subsets-check
+          --check results/threshold-subsets-20261120/results.json
