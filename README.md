@@ -71,3 +71,12 @@ python aggregate.py
 Software: torch 2.4.1+cu121, transformers 4.51.3, peft 0.15.2, scikit-learn 1.4.1.post1. Each DPO run took about 32 minutes on a V100.
 
 Author: Shadman Mahmood Khan Pathan, Old Dominion University.
+
+### Threshold-selection subset sensitivity (archived CPU scores)
+
+An [exploratory fixed-score study](results/threshold-subsets-20261120/README.md)
+reports every one of 120 planned threshold selections at three negative-score
+subset sizes, plus a full-calibration reference. The reproducer checks all
+recorded fields. It illustrates empirical calibration control versus test FPR;
+it does not refit a model or supply independent test replications. Full protocol,
+all results, source hashes and scope limits are linked with the table.
