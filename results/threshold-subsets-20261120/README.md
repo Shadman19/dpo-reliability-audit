@@ -67,3 +67,5 @@ hashes recorded in `../reproduction-cpu-20261111/report.json`.
 Dataset: <https://huggingface.co/datasets/lmsys/toxic-chat>, CC BY-NC 4.0;
 see that dataset's attribution and citation. Dataset-derived numerical artifacts
 retain those terms, separate from repository MIT code. No raw prompts are added.
+
+Input validation rejects nonnumeric, boolean, nonfinite and out-of-range Platt probabilities across every source row, even without `--check`. A matching archive hash is not a substitute for this numeric contract. Invalid inputs fail before output replacement.

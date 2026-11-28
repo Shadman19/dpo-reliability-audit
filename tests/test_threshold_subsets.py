@@ -21,7 +21,9 @@ class ThresholdSubsetTests(unittest.TestCase):
         saved.write_bytes(b'PRESERVE')
         command = [sys.executable, *(['-O'] if optimized else []),
                    str(ROOT / 'threshold_selection_sensitivity.py'),
-                   '--repo', str(repo), '--out', str(out), '--check', str(check)]
+                   '--repo', str(repo), '--out', str(out)]
+        if check is not None:
+            command.extend(['--check', str(check)])
         result = subprocess.run(command, capture_output=True, text=True)
         return result, saved
 
@@ -81,3 +83,21 @@ class ThresholdSubsetTests(unittest.TestCase):
             path.write_bytes(path.read_bytes() + b'\n')
             result, saved = self.invoke(folder, optimized=True, repo=repo)
             self.rejected(result, saved, 'Prediction archive does not match recorded report')
+
+    def test_invalid_platt_scores_rejected_without_recorded_check(self):
+        # A fresh fixture hash proves this is a numeric contract, not authenticity.
+        for split, label in [('calibration', 0), ('test', 0), ('test', 1)]:
+            for value in [float('nan'), float('inf'), float('-inf'), -0.01, 1.01, True, '0.5', None]:
+                for optimized in [False, True]:
+                    with self.subTest(split=split, label=label, value=value, optimized=optimized), tempfile.TemporaryDirectory() as folder:
+                        repo, evidence = self.fixture(folder)
+                        path = evidence / 'tfidf_lr_predictions.jsonl'
+                        rows = [json.loads(line) for line in path.read_text().splitlines()]
+                        row = next(row for row in rows if row['split'] == split and row['y'] == label)
+                        row['probabilities']['platt'] = value
+                        path.write_text(''.join(json.dumps(row) + '\n' for row in rows))
+                        report = json.loads((evidence / 'report.json').read_text())
+                        report['judges']['tfidf_lr']['predictions']['sha256'] = hashlib.sha256(path.read_bytes()).hexdigest()
+                        (evidence / 'report.json').write_text(json.dumps(report))
+                        result, saved = self.invoke(folder, repo=repo, optimized=optimized, check=None)
+                        self.rejected(result, saved, 'Platt probabilities must be finite numbers in [0, 1]')

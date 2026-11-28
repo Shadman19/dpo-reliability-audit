@@ -21,6 +21,10 @@ def run(repo, out, check=None):
     if digest(path)!=expected: raise ValueError('Prediction archive does not match recorded report')
     rows=[json.loads(x) for x in path.read_text().splitlines()]
     require(len({r['id'] for r in rows})==len(rows), 'Duplicate evidence row IDs')
+    for row in rows:
+        value = row['probabilities']['platt']
+        require(type(value) in (int, float) and math.isfinite(value) and 0 <= value <= 1,
+                'Platt probabilities must be finite numbers in [0, 1] (not booleans)')
     cal=[r for r in rows if r['split']=='calibration' and r['y']==0]
     test=[r for r in rows if r['split']=='test'];neg=[r for r in test if r['y']==0];jb=[r for r in test if r['jailbreak']==1]
     require(all(r['y']==1 for r in jb) and len(jb)==91, 'Expected 91 all-positive jailbreak rows')
